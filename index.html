@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Izi Arts | Impressionistische Kunst</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #a39171;
+            --bg-creme: #faf9f6;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+            background-color: var(--bg-creme);
+        }
+        h1, h2, h3, .serif {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Animationen beim Betreten der Seite */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .hero-title {
+            animation: heroFadeIn 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @keyframes heroFadeIn {
+            0% { opacity: 0; transform: translateY(40px); letter-spacing: 0.2em; }
+            100% { opacity: 1; transform: translateY(0); letter-spacing: 0.1em; }
+        }
+
+        /* Warenkorb-Übergänge */
+        .cart-sidebar {
+            transition: transform 0.5s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+        .cart-open { transform: translateX(0); }
+        .cart-closed { transform: translateX(100%); }
+
+        .image-overlay {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+            transition: all 0.5s ease;
+        }
+    </style>
+</head>
+<body class="text-gray-900">
+
+    <!-- Hintergrund-Overlay für den Korb -->
+    <div id="cart-overlay" onclick="toggleCart()" class="fixed inset-0 bg-black/20 z-[60] opacity-0 pointer-events-none transition-opacity duration-500"></div>
+
+    <!-- Warenkorb Sidebar -->
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-screen w-full md:w-[450px] bg-white z-[70] shadow-2xl cart-sidebar cart-closed flex flex-col">
+        <div class="p-8 border-b border-gray-50 flex justify-between items-center">
+            <h2 class="text-2xl serif italic">Warenkorb</h2>
+            <button onclick="toggleCart()" class="text-gray-400 hover:text-black transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <div id="cart-items-list" class="flex-grow overflow-y-auto p-8 space-y-8">
+            <p class="text-gray-400 text-center italic py-20">Noch keine Kunstwerke ausgewählt.</p>
+        </div>
+
+        <div id="cart-footer" class="p-8 bg-gray-50 border-t border-gray-100 hidden">
+            <div class="flex justify-between items-center mb-8">
+                <span class="uppercase tracking-[0.2em] text-[10px] text-gray-500">Gesamt</span>
+                <span id="cart-total" class="text-xl serif">0,00 €</span>
+            </div>
+            <button onclick="showCheckout()" class="w-full bg-gray-900 text-white py-5 uppercase text-[10px] tracking-[0.3em] hover:bg-[--accent] transition-all duration-500">Kauf abschließen</button>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 transition-all duration-500 px-6 py-6" id="main-nav">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold tracking-[0.2em] serif uppercase">Izi Arts</a>
+            <div class="flex items-center space-x-10">
+                <div class="hidden md:flex space-x-8 uppercase text-[10px] tracking-[0.2em] font-medium">
+                    <a href="#gallery" class="hover:text-[--accent] transition">Galerie</a>
+                    <a href="#about" class="hover:text-[--accent] transition">Kontakt</a>
+                </div>
+                <div class="relative cursor-pointer group" onclick="toggleCart()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:text-[--accent] transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                    <span id="cart-count" class="absolute -top-2 -right-2 bg-[--accent] text-white text-[9px] rounded-full h-4 w-4 flex items-center justify-center opacity-0 scale-0 transition-all duration-500">0</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Sektion -->
+    <header class="relative h-screen flex items-center justify-center overflow-hidden bg-[#d9e4e6]">
+        <div class="absolute inset-0 z-0">
+            <!-- Hero Bild ist dein Seerosen-Traum, leicht ausgeblendet -->
+            <img src="https://uploads.onecompiler.io/445ndr3tz/44dyvsn3y/1000104349.jpg" alt="Hero Art" class="w-full h-full object-cover opacity-30 grayscale-[30%]">
+        </div>
+        <div class="relative z-10 text-center px-4 hero-title">
+            <p class="uppercase tracking-[0.5em] text-[10px] mb-6 text-gray-500">Originalgemälde von Izi</p>
+            <h1 class="text-7xl md:text-9xl mb-8 serif italic">Izi Arts</h1>
+            <p class="serif text-xl italic text-gray-600 max-w-md mx-auto mb-8">Handgemalte Unikate für dein Zuhause.</p>
+            <a href="#gallery" class="inline-block border-b border-gray-900 pb-2 uppercase text-[10px] tracking-[0.4em] hover:text-[--accent] hover:border-[--accent] transition-all duration-500">Zur Kollektion</a>
+        </div>
+    </header>
+
+    <!-- Shop / Galerie -->
+    <section id="gallery" class="max-w-7xl mx-auto px-6 py-32">
+        <div class="reveal mb-20 text-center md:text-left">
+            <h2 class="text-4xl serif italic">Meine Kollektion</h2>
+            <p class="text-gray-400 text-[10px] uppercase tracking-[0.3em] mt-4">Jedes Bild ist ein handgemaltes Einzelstück</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-24" id="paintings-grid">
+            <!-- Gemälde werden hier per JS geladen -->
+        </div>
+    </section>
+
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="fixed inset-0 z-[80] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-md" onclick="closeCheckout()"></div>
+        <div class="bg-white w-full max-w-lg relative z-10 p-10 shadow-2xl">
+            <h2 class="text-3xl serif italic mb-8">Bestellung</h2>
+            <form onsubmit="processOrder(event)" class="space-y-6">
+                <input type="text" placeholder="Vollständiger Name" required class="w-full border-b border-gray-200 py-3 focus:outline-none focus:border-[--accent] transition bg-transparent">
+                <input type="email" placeholder="E-Mail Adresse" required class="w-full border-b border-gray-200 py-3 focus:outline-none focus:border-[--accent] transition bg-transparent">
+                <input type="text" placeholder="Versandadresse" required class="w-full border-b border-gray-200 py-3 focus:outline-none focus:border-[--accent] transition bg-transparent">
+                <button type="submit" class="w-full bg-gray-900 text-white py-5 mt-6 uppercase text-[10px] tracking-[0.3em] hover:bg-[--accent] transition-all duration-500">Kauf bestätigen</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Benachrichtigung -->
+    <div id="toast" class="fixed bottom-10 left-10 bg-gray-900 text-white px-8 py-4 rounded-sm text-[10px] uppercase tracking-[0.2em] transform translate-y-24 opacity-0 transition-all duration-700 z-[100]"></div>
+
+    <script>
+        const paintings = [
+            { id: 1, title: "Seerosen-Traum", price: 35, size: "Großformat", img: "https://uploads.onecompiler.io/445ndr3tz/44dyvsn3y/1000104349.jpg" },
+            { id: 2, title: "Küstenspaziergang", price: 30, size: "Hochformat", img: "https://uploads.onecompiler.io/445ndr3tz/44dyw7x69/1000104342.jpg" },
+            { id: 3, title: "Garten der Stille", price: 40, size: "Mittelformat", img: "https://uploads.onecompiler.io/445ndr3tz/44dyw7x69/1000104345.jpg" },
+            { id: 4, title: "Mondschein-Schwan", price: 25, size: "Mittelformat", img: "https://uploads.onecompiler.io/445ndr3tz/44dyw7x69/1000104344.jpg" },
+            { id: 5, title: "Goldfisch-Tanz", price: 20, size: "Kleinformat", img: "https://uploads.onecompiler.io/445ndr3tz/44dyw7x69/1000104343.jpg" }
+        ];
+
+        let cart = [];
+
+        function renderGallery() {
+            const grid = document.getElementById('paintings-grid');
+            grid.innerHTML = paintings.map((p) => `
+                <div class="reveal group">
+                    <div class="relative overflow-hidden aspect-square mb-8 bg-gray-100">
+                        <img src="${p.img}" alt="${p.title}" class="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110">
+                        <div class="image-overlay absolute inset-0 opacity-0 group-hover:opacity-100 flex items-center justify-center p-8">
+                            <button onclick="addToCart(${p.id})" class="bg-white text-black w-full py-4 text-[9px] uppercase tracking-[0.3em] hover:bg-black hover:text-white transition-all duration-500 shadow-xl transform translate-y-8 group-hover:translate-y-0">In den Korb legen</button>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="serif text-xl mb-1">${p.title}</h3>
+                            <p class="text-[9px] text-gray-400 uppercase tracking-[0.2em] font-light">${p.size} — Original</p>
+                        </div>
+                        <p class="text-sm font-medium text-[--accent]">${p.price} €</p>
+                    </div>
+                </div>
+            `).join('');
+            setTimeout(handleReveal, 100);
+        }
+
+        function handleReveal() {
+            const reveals = document.querySelectorAll('.reveal');
+            reveals.forEach(el => {
+                const windowHeight = window.innerHeight;
+                const elementTop = el.getBoundingClientRect().top;
+                if (elementTop < windowHeight - 50) el.classList.add('active');
+            });
+        }
+
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('main-nav');
+            if (window.scrollY > 50) nav.classList.add('bg-white/90', 'backdrop-blur-md', 'py-4', 'shadow-sm');
+            else nav.classList.remove('bg-white/90', 'backdrop-blur-md', 'py-4', 'shadow-sm');
+            handleReveal();
+        });
+
+        function addToCart(id) {
+            const p = paintings.find(item => item.id === id);
+            cart.push(p);
+            updateUI();
+            showToast(`"${p.title}" zum Warenkorb hinzugefügt`);
+        }
+
+        function updateUI() {
+            const count = document.getElementById('cart-count');
+            const list = document.getElementById('cart-items-list');
+            const footer = document.getElementById('cart-footer');
+            const total = document.getElementById('cart-total');
+
+            count.textContent = cart.length;
+            count.style.opacity = cart.length > 0 ? '1' : '0';
+            count.style.transform = cart.length > 0 ? 'scale(1)' : 'scale(0)';
+
+            if (cart.length === 0) {
+                list.innerHTML = '<p class="text-gray-400 text-center italic py-20">Noch keine Kunstwerke ausgewählt.</p>';
+                footer.classList.add('hidden');
+            } else {
+                footer.classList.remove('hidden');
+                let totalVal = cart.reduce((sum, item) => sum + item.price, 0);
+                list.innerHTML = cart.map((item, i) => `
+                    <div class="flex space-x-6 items-center border-b border-gray-50 pb-6">
+                        <img src="${item.img}" class="w-16 h-16 object-cover rounded-sm">
+                        <div class="flex-grow">
+                            <h4 class="serif text-sm italic">${item.title}</h4>
+                            <p class="text-[10px] text-gray-400 mt-1">${item.price} €</p>
+                        </div>
+                        <button onclick="removeFromCart(${i})" class="text-gray-300 hover:text-black transition">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                `).join('');
+                total.textContent = totalVal.toFixed(2) + ' €';
+            }
+        }
+
+        function removeFromCart(i) { cart.splice(i, 1); updateUI(); }
+        function toggleCart() { 
+            document.getElementById('cart-sidebar').classList.toggle('cart-open'); 
+            document.getElementById('cart-sidebar').classList.toggle('cart-closed'); 
+            document.getElementById('cart-overlay').classList.toggle('opacity-0'); 
+            document.getElementById('cart-overlay').classList.toggle('pointer-events-none'); 
+        }
+        function showCheckout() { document.getElementById('checkout-modal').classList.remove('hidden'); }
+        function closeCheckout() { document.getElementById('checkout-modal').classList.add('hidden'); }
+        function processOrder(e) { 
+            e.preventDefault(); 
+            alert("Vielen Dank! Deine Bestellung für Izi Arts ist eingegangen. Ich werde mich in Kürze bei dir melden."); 
+            cart = []; 
+            updateUI(); 
+            closeCheckout(); 
+            toggleCart(); 
+        }
+        function showToast(msg) { 
+            const t = document.getElementById('toast'); 
+            t.textContent = msg; 
+            t.classList.remove('translate-y-24', 'opacity-0'); 
+            setTimeout(() => t.classList.add('translate-y-24', 'opacity-0'), 3000); 
+        }
+
+        window.onload = renderGallery;
+    </script>
+</body>
+</html>
+
